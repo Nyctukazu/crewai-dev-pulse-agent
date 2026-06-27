@@ -4,7 +4,7 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from config.database import get_db_connection
 
-def save_commit_record(developer_name: str, commit_sha: str, commit_message: str, commited_at: str):
+def save_commit_record(developer_name: str, commit_sha: str, commit_message: str, committed_at: str):
     query = """
         INSERT INTO velocity_metrics (developer_name, commit_sha, commit_message, committed_at)
         VALUES (%s, %s, %s, %s)
@@ -15,7 +15,7 @@ def save_commit_record(developer_name: str, commit_sha: str, commit_message: str
         return False
     try:
         with connection.cursor() as cursor:
-            cursor.execute(query, (developer_name, commit_sha, commit_message, committed_ai))
+            cursor.execute(query, (developer_name, commit_sha, commit_message, committed_at))
             connection.commit()
             return True
     except Exception as e:
@@ -43,13 +43,13 @@ def check_inactivity_status():
     try:
         with connection.cursor() as cursor:
             cursor.execute(query)
-            resutl = cursor.fetchone()
+            result = cursor.fetchone()
 
             if not result or result[0] is None:
                 return {"hours_elapsed": 0, "breached": False, "empty_db": True}
             
             time_delta = result[0]
-            hourse_elapse - int(time_delta.total_seconds() / 3600)
+            hours_elapsed = int(time_delta.total_seconds() / 3600)
 
             return {
                 "hours_elapsed": hours_elapsed,
