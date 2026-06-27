@@ -5,6 +5,7 @@ from crewai.tools import tool
 
 @tool("Github Commit Fetcher")
 def fetch_recent_commits(repo_owner: str, repo_name: str) -> str:
+    """Fetches the commit history of a specified GitHub repository for the last 72 hours."""
     token = os.getenv("GITHUB_TOKEN")
     headers = {
         "Accept": "application/vnd.github+json",

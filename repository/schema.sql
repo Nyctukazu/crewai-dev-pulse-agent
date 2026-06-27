@@ -18,8 +18,17 @@ CREATE TABLE IF NOT EXISTS velocity_metrics (
     extracted_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS pipeline_audit_logs (
+    log_id BIGSERIAL PRIMARY KEY,
+    system_id VARCHAR(50) REFERENCES system_metadata(system_id),
+    total_commits_found INT NOT NULL,
+    hours_since_last_push INT NOT NULL,
+    threshold_triggered BOOLEAN DEFAULT FALSE,
+    executed_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
 INSERT INTO system_metadata (system_id, target_repo_owner, target_repo_name, inactivity_threshold_hours)
-VALUES ('TRACKER-E5', 'your-github-username', 'your-repo-name', 72)
+VALUES ('TRACKER-E5', 'Nyctukazu', 'e5-velocity-tracker', 72)
 ON CONFLICT (system_id) DO UPDATE
 SET target_repo_owner = EXCLUDED.target_repo_owner,
     target_repo_name = EXCLUDED.target_repo_name;

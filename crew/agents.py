@@ -7,6 +7,7 @@ from crewai.tools import tool
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 from dotenv import load_dotenv
+from tools.github_tool import fetch_recent_commits
 
 project_root = Path(__file__).resolve().parents[1]
 env_path = project_root / ".env"
@@ -14,11 +15,18 @@ load_dotenv(dotenv_path=env_path)
 
 token_value = os.getenv("GITHUB_TOKEN") or "TEMPORARY_BLANK_TOKEN"
 
+# os.environ["OPENAI_API_KEY"] = os.getenv("GROQ_API_KEY") 
+# os.environ["OPENAI_API_BASE"] = "https://api.groq.com/openai/v1"
+# os.environ["OPENAI_MODEL_NAME"] = "groq/llama-3.3-70b-versatile"
+
 groq_llm = LLM(
     model="openai/llama-3.3-70b-versatile",
+    base_url="https://api.groq.com/openai/v1",
     api_key=os.getenv("GROQ_API_KEY"),
     temperature=0.2,
-    drop_params=True
+    extra_headers={
+        "no-cache": "true"
+    }
 )
 
 server_params = StdioServerParameters(
@@ -92,7 +100,8 @@ velocity_inspector_agent = Agent(
     goal="Analyze repository commit frequencies to evaluate solo engineering consistency.",
     backstory="An automated auditing agent dedicated to extracting precise contribution frequencies.",
     llm=groq_llm,
-    tools=github_tools,
+    tools=[fetch_recent_commits],
     memory=False,
+    cache=False,
     verbose=True
 )

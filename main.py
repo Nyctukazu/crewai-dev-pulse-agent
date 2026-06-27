@@ -1,4 +1,12 @@
 import sys
+try:
+    # Target the raw class where CrewAI compiles message formatting
+    from crewai.agents.parser import AgentAction  
+    import crewai.llms.cache as _crewai_cache
+    _crewai_cache.mark_cache_breakpoint = lambda msg: msg
+except (ImportError, AttributeError):
+    pass
+
 from dotenv import load_dotenv
 from crew.pipeline import run_velocity_pipeline
 from repository.velocity_dao import check_inactivity_status
@@ -35,8 +43,8 @@ def main():
         db_status = check_inactivity_status()
 
         if db_status:
-            print(f"-> Hours elapsed since last verifiable commit: {db_status['hours_elapse']}h")
-            if db_status['breach']:
+            print(f"-> Hours elapsed since last verifiable commit: {db_status['hours_elapsed']}h")
+            if db_status['breached']:
                 print("CRITICAL METRIC ALERT: 72-hour inactivity threshold breached!")
             else:
                 print("System Operational Status: Metrics are running within stable timeline paremeters.")
