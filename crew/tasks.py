@@ -1,5 +1,4 @@
 from crewai import Task
-from crew.agents import velocity_inspector_agent
 
 extract_git_metrics_task = Task(
     description=(
@@ -12,8 +11,7 @@ extract_git_metrics_task = Task(
     expected_output=(
         "A structure JSON-formatted list of dictionaties containing individual commit profiles. "
         "Example structure: [{{'sha': '...', 'author': '...', 'date': '...', 'message': '...'}}]"
-    ),
-    agent=velocity_inspector_agent
+    )
 )
 
 evaluate_velocity_gaps_task = Task(
@@ -26,8 +24,7 @@ evaluate_velocity_gaps_task = Task(
     expected_output=(
         "A summarizing performance log detailing total active commit counts and highlighting "
         "the exact hours elapsed since the last verifiable push event."
-    ),
-    agent=velocity_inspector_agent
+    )
 )
 
 velocity_inspection_task = Task(
@@ -41,5 +38,4 @@ velocity_inspection_task = Task(
         "the exact timestamps, and the messages."
     ),
     expected_output="A structured summary of recent commit metrics and timelines.",
-    agent=velocity_inspector_agent
 )

@@ -15,6 +15,8 @@ def save_commit_record(developer_name: str, commit_sha: str, commit_message: str
         return False
     try:
         with connection.cursor() as cursor:
+
+            print(f"Debug: Attempting to insert SHA: {commit_sha[:7]} by {developer_name} at {committed_at}")
             cursor.execute(query, (developer_name, commit_sha, commit_message, committed_at))
             connection.commit()
             return True
@@ -28,9 +30,9 @@ def save_commit_record(developer_name: str, commit_sha: str, commit_message: str
 def check_inactivity_status():
     query = """
         SELECT 
-            NOW() - MAX(committed_at) AS time_since_last_commit,
+            (NOW() AT TIME ZONE 'UTC') - MAX(committed_at AT TIME ZONE 'UTC') AS time_since_last_commit,
             CASE
-                WHEN NOW() - MAX(committed_at) > INTERVAL '72 hours' THEN TRUE
+                WHEN NOW() AT TIME ZONE 'UTC' - (MAX(committed_at) AT TIME ZONE 'UTC') > INTERVAL '72 hours' THEN TRUE
                 ELSE FALSE
             END AS is_threshold_breached
         FROM velocity_metrics;

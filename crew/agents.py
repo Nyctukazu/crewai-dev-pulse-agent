@@ -1,13 +1,15 @@
 import os
+import sys
 import asyncio
 from pathlib import Path
 from typing import Any
-from crewai import Agent, LLM
+from crewai import Agent, LLM, Crew, Process, Task
 from crewai.tools import tool
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 from dotenv import load_dotenv
 from tools.github_tool import fetch_recent_commits
+import litellm
 
 project_root = Path(__file__).resolve().parents[1]
 env_path = project_root / ".env"
@@ -28,6 +30,11 @@ groq_llm = LLM(
         "no-cache": "true"
     }
 )
+
+local_llm = LLM(
+    model="ollama/llama3.2",
+    base_url="http://localhost:11434"
+    )
 
 server_params = StdioServerParameters(
     command="npx",
@@ -95,13 +102,47 @@ def discover_and_bridge_mcp_tools():
 github_tools = discover_and_bridge_mcp_tools()
 print(f"[System Init] Successfully attached {len(github_tools)} GitHub tools to the agent runtime.")
 
-velocity_inspector_agent = Agent(
-    role="E5 Velocity Inspector",
-    goal="Analyze repository commit frequencies to evaluate solo engineering consistency.",
-    backstory="An automated auditing agent dedicated to extracting precise contribution frequencies.",
-    llm=groq_llm,
-    tools=[fetch_recent_commits],
-    memory=False,
-    cache=False,
-    verbose=True
-)
+def execute_crew_workflow(target_llm: LLM, tasks: list, inputs: dict, is_fallback=False):
+    if is_fallback:
+        print("\nSYSTEM NOTICE: Booting E5 Velocity Inspector on Local Compute (Ollama)...")
+    else:
+        print("\nSYSTEM NOTICE: Booting E5 Velocity Inspector on Cloud Engine (Groq)...")
+
+    velocity_inspector_agent = Agent(
+        role="E5 Velocity Inspector",
+        goal="Analyze repository commit frequencies to evaluate solo engineering consistency.",
+        backstory="An automated auditing agent dedicated to extracting precise contribution frequencies.",
+        llm=groq_llm,
+        tools=[fetch_recent_commits] + github_tools,
+        memory=False,
+        cache=False,
+        verbose=True
+    )
+
+    for task in tasks:
+        task.agent = velocity_inspector_agent
+
+    crew = Crew(
+        agents=[velocity_inspector_agent],
+        tasks=tasks,
+        process=Process.sequential,
+        verbose=True
+    )
+
+    return crew.kickoff(inputs=inputs)
+
+if __name__ == "__main__":
+    try:
+        final_output = execute_crew_workflow(groq_llm, is_fallback=False)
+        print("Analysis Complete via Cloud Engine.")
+        print(final_output)
+    
+    except litellm.RateLimitError:
+        print("\nCRITICAL ERROR: Cloud Infrastructure Rate Limit Triggered!")
+        print("Hot-swapping model core to local on-premise hardware backup...")
+        
+        final_output = execute_crew_workflow(local_llm, is_fallback=True)
+        print("Analysis Successfully Recovered and Completed via Local Machine Hardware.")
+        print(final_output)
+
+__all__ = ['execute_crew_workflow', 'groq_llm', 'local_llm']
