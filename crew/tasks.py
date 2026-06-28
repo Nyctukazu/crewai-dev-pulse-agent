@@ -2,16 +2,13 @@ from crewai import Task
 
 extract_git_metrics_task = Task(
     description=(
-        "Use the official GitHub MCP server tools to investigate the commit history "
-        "of the target repository: '{repo_owner}/{repo_name}'. "
-        "Identify the commit SHA, the author's name, the exact timestamp of the commit, "
-        "and the commit message text.  Focus specifically on isolating contributions made "
-        "by the developer over the current execution boundary timelin."
+        "1. Use the official GitHub MCP server tools or fetch_recent_commits to investigate the commit history "
+        "of the target repository: '{repo_owner}/{repo_name}'.\n"
+        "2. For EVERY commit you find, read its SHA, author, message, and date.\n"
+        "3. Immediately invoke the 'Save Commit to Database' tool for each individual commit to archive it.\n"
+        "4. Stop if the tool returns a 'Skip' message indicating older records have been reached."
     ),
-    expected_output=(
-        "A structure JSON-formatted list of dictionaties containing individual commit profiles. "
-        "Example structure: [{{'sha': '...', 'author': '...', 'date': '...', 'message': '...'}}]"
-    )
+    expected_output="A structured summary reporting how many new commits were successfully archived versus skipped."
 )
 
 evaluate_velocity_gaps_task = Task(

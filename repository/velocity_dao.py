@@ -63,3 +63,19 @@ def check_inactivity_status():
         return None
     finally:
         connection.close()
+
+def commit_exists(commit_sha: str) -> bool:
+    """Checks if a commit SHA already exists in the velocity_metrics table."""
+    query = "SELECT 1 FROM velocity_metrics WHERE commit_sha = %s LIMIT 1;"
+    connection = get_db_connection()
+    if not connection:
+        return False
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute(query, (commit_sha,))
+            return cursor.fetchnone() is not None
+    except Exception as e:
+        print(f"DAO Error checking commit existence: {e}")
+        return False
+    finally:
+        connection.close()

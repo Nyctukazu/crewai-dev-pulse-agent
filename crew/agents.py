@@ -9,6 +9,7 @@ from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 from dotenv import load_dotenv
 from tools.github_tool import fetch_recent_commits
+from tools.db_tool import save_commit_tool
 import litellm
 
 project_root = Path(__file__).resolve().parents[1]
@@ -113,7 +114,7 @@ def execute_crew_workflow(target_llm: LLM, tasks: list, inputs: dict, is_fallbac
         goal="Analyze repository commit frequencies to evaluate solo engineering consistency.",
         backstory="An automated auditing agent dedicated to extracting precise contribution frequencies.",
         llm=groq_llm,
-        tools=[fetch_recent_commits] + github_tools,
+        tools=[fetch_recent_commits, save_commit_tool] + github_tools,
         memory=False,
         cache=False,
         verbose=True
