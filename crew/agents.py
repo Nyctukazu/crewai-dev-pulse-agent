@@ -113,8 +113,8 @@ def execute_crew_workflow(target_llm: LLM, tasks: list, inputs: dict, is_fallbac
         role="E5 Velocity Inspector",
         goal="Analyze repository commit frequencies to evaluate solo engineering consistency.",
         backstory="An automated auditing agent dedicated to extracting precise contribution frequencies.",
-        llm=groq_llm,
-        tools=[fetch_recent_commits, save_commit_tool] + github_tools,
+        llm=target_llm,
+        tools=github_tools,
         memory=False,
         cache=False,
         verbose=True
