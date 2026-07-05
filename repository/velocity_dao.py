@@ -79,3 +79,105 @@ def commit_exists(commit_sha: str) -> bool:
         return False
     finally:
         connection.close()
+
+def fetch_github_logs():
+    """
+    Retrieves all recorded git commits and design activities ordered by timestamp for dynamic graph rendering.
+    """
+
+    query = """
+        SELECT 
+            developer_name as person,
+            committed_at as activity_time,
+            'GitHub Commit' as activity_type,
+            commit_message as detail
+        FROM velocity_metrics
+        ORDER BY activity_time DESC;
+    """
+
+    connection = get_db_connection()
+    if not connection:
+        return []
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute(query)
+            columns = [desc[0] for desc in cursor.description]
+            return [dict(zip(columns, row)) for row in cursor.fetchall()]
+    except Exception as e:
+        print(f"DAO Error fetching activity logs: {e}")
+        return []
+    finally:
+        connection.close()
+
+def fetch_figma_logs():
+    """Retrives all Figma design metrics."""
+    query = """
+        SELECT
+            designer_name as person,
+            modified_at as activity_time,
+            component_name as detail,
+            action_type 
+        FROM figma_metrics 
+        ORDER BY modified_at DESC;
+    """
+
+    connection = get_db_connection()
+    if not connection: return []
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute(query)
+            columns = [desc[0] for desc in cursor.description]
+            return [dict(zip(columns, row)) for row in cursor.fetchall()]
+    except Exception as e:
+        print(f"DAO Error fetching Figma logs: {e}")
+        return []
+    finally:
+        connection.close()
+
+def figma_event_exists(designer_name: str, modified_at: str) -> bool:
+    """
+    Checks if a specific design modification timestamp already exists for a designer.
+    """
+    query = """
+        SELECT 1
+        FROM figma_metrics
+        WHERE designer_name = %s
+        AND modified_at = %s
+        LIMIT 1;
+    """
+    connection = get_db_connection()
+    if not connection:
+        return False
+    try:
+        with connection.cursor() as cursor:
+            cursor.execure(query, (designer_name, modified_at))
+            return cursor.fetchnone() is not None
+    except Exception as e:
+        print(f"DAO Error checking Figma event: {e}")
+        return False
+    finally:
+        connection.close()
+
+def save_figma_record(designer_name: str, file_key: str, component_name: str, action_type: str, modified_at: str) -> bool:
+    """
+    Inserts a verified Figma asset event row into Neon.
+    """
+
+    query = """
+        INSERT INTO figma_metrics (designer_name, file_key, component_name, action_type, modified_at)
+        VALUES (%s, %s, %s, %s, %s);
+    """
+
+    connection = get_db_connection()
+    if not connection:
+        return False
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute(query, (designer_name, file_key, component_name, action_type, modified_at))
+            connection.commit()
+            return True
+    except Exception as e:
+        print(f"DAO Error saving Figma record: {e}")
+        return False
+    finally:
+        connection.close()

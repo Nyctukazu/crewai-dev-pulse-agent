@@ -9,7 +9,7 @@ def fetch_figma_activity(file_key: str) -> str:
     if not token:
         return "Error: FIGMA_TOKEN missing from environment properties."
     
-    url = f"https://api.figma.com/v1/files/{file_key}/versions"
+    url = f"https://api.figma.com/v1/files/{file_key}/comments"
     headers = {"X-Figma-Token": token}
 
     try:
@@ -18,18 +18,20 @@ def fetch_figma_activity(file_key: str) -> str:
             return f"Figma API Error: HTTP {response.status_code} - {response.text}"
         
         data = response.json()
-        versions = data.get("versions", [])
+        comments = data.get("comments", [])
 
-        if not versions:
+        if not comments:
             return "No recent design versions or checkpoints detected in this Figma file."
         
         summary = []
-        for v in versions[:5]:
-            label = v.get("label") or "Untitled Iteration"
-            description = v.get("description") or "No description provided."
-            user = v.get("user", {}).get("handle", "Unknown Designer")
-            created_at = v.get("created_at")
-            summary.append(f"- [{created_at}] {user} updated '{label}': {description}")
+
+        comments.sort(key=lambda x: x.get("created_at", ""), reverse=True)
+
+        for c in comments[:10]:
+            user = c.get("user", {}).get("handle", "Unknown Designer")
+            message = c.get("message") or "Left a pin droplet markup."
+            created_at = c.get("created_at")
+            summary.append(f"- [{created_at}] {user} updated '{message}': Active feedback log.")
 
         return "\n".join(summary)
     

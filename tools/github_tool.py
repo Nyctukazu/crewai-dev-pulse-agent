@@ -40,10 +40,12 @@ def fetch_recent_commits(repo_owner: str, repo_name: str) -> str:
         
         result = []
         for commit in commits_data:
-            author = commit.get('commit', {}).get('author', {}).get('name', 'Unknown')
-            date = commit.get('commit', {}).get('author', {}).get('date', 'Unknown')
-            message = commit.get('commit', {}).get('message', '').replace('\n', ' ')
-            result.append(f"- [{date}] {author}: {message}")
+            sha = commit.get('sha', 'UnknownSHA')
+            commit_meta = commit.get('commit', {})
+            author = commit_meta.get('author', {}).get('name', 'Unknown')
+            date = commit_meta.get('author', {}).get('date', 'Unknown')
+            message = commit_meta.get('message', '').replace('\n', ' ')
+            result.append(f"- SHA: {sha} | Date: {date} | Author: {author} | Message: {message}")
 
         return "\n".join(result)
     

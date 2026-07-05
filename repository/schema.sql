@@ -27,6 +27,16 @@ CREATE TABLE IF NOT EXISTS pipeline_audit_logs (
     executed_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS figma_metrics (
+    id SERIAL PRIMARY KEY,
+    designer_name VARCHAR(100) NOT NULL,
+    file_key VARCHAR(100) NOT NULL,
+    component_name VARCHAR(150),
+    action_type VARCHAR(50) DEFAULT 'edit',
+    modified_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    UNIQUE(designer_name, modified_at)
+);
+
 INSERT INTO system_metadata (system_id, target_repo_owner, target_repo_name, inactivity_threshold_hours)
 VALUES ('TRACKER-E5', 'Nyctukazu', 'e5-velocity-tracker', 72)
 ON CONFLICT (system_id) DO UPDATE

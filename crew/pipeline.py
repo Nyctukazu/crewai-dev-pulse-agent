@@ -1,7 +1,7 @@
 import os
 from crewai import Crew, Process
 from crew.agents import execute_crew_workflow, groq_llm, local_llm
-from crew.tasks import extract_git_metrics_task, evaluate_velocity_gaps_task
+from crew.tasks import velocity_inspection_task, evaluate_figma_task
 from tools.figma_tool import fetch_figma_activity
 from crewai import Task
 import litellm
@@ -24,7 +24,7 @@ def run_velocity_pipeline(repo_owner: str, repo_name: str, figma_file_key: str):
         tools=[fetch_figma_activity]
     )
 
-    pipeline_tasks = [extract_git_metrics_task, evaluate_design_task, evaluate_velocity_gaps_task]
+    pipeline_tasks = [velocity_inspection_task, evaluate_figma_task]
 
     try:
         print("\n[Pipeline Core] Attempting primary execution via Cloud Engine (Groq)...")
