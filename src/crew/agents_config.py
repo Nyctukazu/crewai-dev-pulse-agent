@@ -3,14 +3,13 @@ import sys
 import asyncio
 from pathlib import Path
 from typing import Any
-from crewai import Agent, LLM, Crew, Process, Task
-from crewai.tools import tool
+from crewai import LLM, Crew, Process
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 from dotenv import load_dotenv
-from tools.github_tool import fetch_recent_commits
-from tools.figma_tool import fetch_figma_activity
-from tools.db_tool import save_commit_tool, save_figma_tool
+from agents.data_miner import get_data_miner_agent
+from agents.velocity_inspector import get_velocity_inspector_agent
+from tasks.tasks import velocity_inspection_task
 import litellm
 
 project_root = Path(__file__).resolve().parents[1]
@@ -18,10 +17,6 @@ env_path = project_root / ".env"
 load_dotenv(dotenv_path=env_path)
 
 token_value = os.getenv("GITHUB_TOKEN") or "TEMPORARY_BLANK_TOKEN"
-
-# os.environ["OPENAI_API_KEY"] = os.getenv("GROQ_API_KEY") 
-# os.environ["OPENAI_API_BASE"] = "https://api.groq.com/openai/v1"
-# os.environ["OPENAI_MODEL_NAME"] = "groq/llama-3.3-70b-versatile"
 
 groq_llm = LLM(
     model="openai/llama-3.3-70b-versatile",
@@ -65,44 +60,6 @@ def run_mcp_tool_sync(tool_name: str, **kwargs) -> str:
         return loop.run_until_complete(invoke_mcp())
     else:
         return asyncio.run(invoke_mcp())
-    
-def discover_and_bridge_mcp_tools():
-    native_tools = []
-
-    async def fetch_schemas():
-        async with stdio_client(server_params) as (read_stream, write_stream):
-            async with ClientSession(read_stream, write_stream) as session:
-                await session.initialize()
-                return await session.list_tools()
-    
-    print("[System Init] Connecting to GitHub MCP Server process...")
-    try: 
-        mcp_data = asyncio.run(fetch_schemas())
-    except RuntimeError:
-        import nest_asyncio
-        nest_asyncio.apply()
-        mcp_data = asyncio.get_event_loop().run_until_complete(fetch_schemas())
-
-    for mcp_tool in mcp_data.tools:
-
-        def make_executor(t_name=mcp_tool.name):
-            return lambda **kwargs: run_mcp_tool_sync(t_name, **kwargs)
-
-        @tool
-        def dummy_mcp_bridge_tool(**kwargs) -> str:
-            """Temporary placeholder docstring to satisfy CrewAI validation."""
-            return ""
-
-        dummy_mcp_bridge_tool.name = mcp_tool.name
-        dummy_mcp_bridge_tool.description = mcp_tool.description or f"GitHub MCP tool: {mcp_tool.name}"
-        dummy_mcp_bridge_tool._run = make_executor()
-
-        native_tools.append(dummy_mcp_bridge_tool)
-
-    return native_tools
-
-github_tools = discover_and_bridge_mcp_tools()
-print(f"[System Init] Successfully attached {len(github_tools)} GitHub tools to the agent runtime.")
 
 def execute_crew_workflow(target_llm: LLM, tasks: list, inputs: dict, is_fallback=False):
     if is_fallback:
@@ -110,28 +67,14 @@ def execute_crew_workflow(target_llm: LLM, tasks: list, inputs: dict, is_fallbac
     else:
         print("\nSYSTEM NOTICE: Booting E5 Velocity Inspector on Cloud Engine (Groq)...")
 
-    velocity_inspector_agent = Agent(
-        role="E5 Velocity Inspector",
-        goal="Analyze repository commit frequencies to evaluate solo engineering consistency.",
-        backstory="An automated auditing agent dedicated to extracting precise contribution frequencies.",
-        llm=target_llm,
-        tools=[
-            save_commit_tool, 
-            save_figma_tool, 
-            save_commit_tool,
-            save_figma_tool
-        ] + github_tools,
-        memory=False,
-        cache=False,
-        verbose=True
-    )
-
-    for task in tasks:
-        task.agent = velocity_inspector_agent
+    github_tools = [...]
+    miner_agent = get_data_miner_agent(target_llm)
+    velocity_tasks = velocity_inspection_task(miner_agent)
+    inspector_agent = get_velocity_inspector_agent(target_llm)
 
     crew = Crew(
-        agents=[velocity_inspector_agent],
-        tasks=tasks,
+        agents=[miner_agent],
+        tasks=[velocity_tasks],
         process=Process.sequential,
         verbose=True
     )

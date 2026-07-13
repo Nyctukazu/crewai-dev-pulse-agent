@@ -11,7 +11,7 @@ st.subheader("Real-time Tracking & Engineering Consistency Analytics")
 st.sidebar.header("Target Infrastructure")
 repo_owner = st.sidebar.text_input("Github Owner", value="your-github_username")
 repo_name = st.sidebar.text_input("Repository Name", value="your-repo_name")
-figma_key = st.sidebar.text_input("Figma File Key", value="s1sE1lI4ldL9Ms2SBv9YkO")
+figma_key = st.sidebar.text_input("Figma File Key", value="your-figma_Key")
 
 if st.sidebar.button("Run Agent Inspection Loop"):
     with st.spinner("Executing CrewAI Factory Worker Pipeline..."):

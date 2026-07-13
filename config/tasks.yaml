@@ -1,0 +1,15 @@
+velocity_inspection_task:
+  description: >
+    Sync the latest repository history for the repository owned by '{repo_owner}' named '{repo_name}'.
+    Us the Sync Github Commits tool to fetch today's data and and automatically archive it into the Neon database.
+    Verify that the sync operation completed successfully.
+  expected_output: >
+    A strict confirmation string specifying the total number of commit entried successfully synced to the database.
+
+evaluate_figma_task:
+  description: >
+    Sync the recent Figma design activity for the file key '{figma_file_key}'.
+    Use the Sync Figma Activity tool the fetch the logs and automatically archive them into the Neon database.
+    Verify that all modifed frames, components, and timestamps were captured.
+  expected_output: >
+    A strict confirmation detailing the total number of Figma activity roews successfully archived.

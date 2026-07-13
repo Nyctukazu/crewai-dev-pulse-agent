@@ -65,7 +65,9 @@ def check_inactivity_status():
         connection.close()
 
 def commit_exists(commit_sha: str) -> bool:
-    """Checks if a commit SHA already exists in the velocity_metrics table."""
+    """
+    Checks if a commit SHA already exists in the velocity_metrics table.
+    """
     query = "SELECT 1 FROM velocity_metrics WHERE commit_sha = %s LIMIT 1;"
     connection = get_db_connection()
     if not connection:
@@ -110,7 +112,9 @@ def fetch_github_logs():
         connection.close()
 
 def fetch_figma_logs():
-    """Retrives all Figma design metrics."""
+    """
+    Retrives all Figma design metrics.
+    """
     query = """
         SELECT
             designer_name as person,

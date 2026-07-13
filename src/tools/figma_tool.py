@@ -29,9 +29,9 @@ def fetch_figma_activity(file_key: str) -> str:
 
         for c in comments[:10]:
             user = c.get("user", {}).get("handle", "Unknown Designer")
-            message = c.get("message") or "Left a pin droplet markup."
+            message = c.get("message") or "Updated canvas"
             created_at = c.get("created_at")
-            summary.append(f"- [{created_at}] {user} updated '{message}': Active feedback log.")
+            summary.append(f"DESIGNER: {user} | FILE_KEY: {file_key} | LABEL: {message} | MODIFIED_AT: {created_at}")
 
         return "\n".join(summary)
     
