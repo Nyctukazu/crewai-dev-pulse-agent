@@ -1,15 +1,15 @@
 import os
-import sys
 import asyncio
 from pathlib import Path
-from typing import Any
 from crewai import LLM, Crew, Process
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 from dotenv import load_dotenv
-from agents.data_miner import get_data_miner_agent
-from agents.velocity_inspector import get_velocity_inspector_agent
-from tasks.tasks import velocity_inspection_task
+from src.crew.agents.data_miner import get_data_miner_agent
+from src.crew.agents.velocity_inspector import get_velocity_inspector_agent
+from src.crew.agents.data_archiver import get_data_archiver_agent
+from src.crew.agents.communicator import get_communicator_agent
+from src.crew.tasks.tasks import get_velocity_task
 import litellm
 
 project_root = Path(__file__).resolve().parents[1]
@@ -61,20 +61,24 @@ def run_mcp_tool_sync(tool_name: str, **kwargs) -> str:
     else:
         return asyncio.run(invoke_mcp())
 
-def execute_crew_workflow(target_llm: LLM, tasks: list, inputs: dict, is_fallback=False):
+def execute_crew_workflow(target_llm: LLM, inputs: dict, is_fallback=False):
     if is_fallback:
         print("\nSYSTEM NOTICE: Booting E5 Velocity Inspector on Local Compute (Ollama)...")
     else:
         print("\nSYSTEM NOTICE: Booting E5 Velocity Inspector on Cloud Engine (Groq)...")
 
-    github_tools = [...]
-    miner_agent = get_data_miner_agent(target_llm)
-    velocity_tasks = velocity_inspection_task(miner_agent)
-    inspector_agent = get_velocity_inspector_agent(target_llm)
+    agents_pool = {
+        "miner": get_data_miner_agent(target_llm),
+        "archiver": get_data_archiver_agent(target_llm),
+        "inspector": get_velocity_inspector_agent(target_llm),
+        "communicator": get_communicator_agent(target_llm)
+    }
+
+    velocity_tasks = get_velocity_task(agents_pool)
 
     crew = Crew(
-        agents=[miner_agent],
-        tasks=[velocity_tasks],
+        agents=list(agents_pool.values()),
+        tasks=velocity_tasks,
         process=Process.sequential,
         verbose=True
     )

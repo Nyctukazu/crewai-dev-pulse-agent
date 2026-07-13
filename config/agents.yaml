@@ -13,7 +13,7 @@ velocity_inspector_agent:
   goal: "Analyze the archived records in the database to calculate contribution frequencies and identify inactivity thresholds."
   backstory: "A high-level project manager dedicated to evaluating team consistency and flagging when the 72-hour threshold is breached."
 
-communication_agent:
+communicator_agent:
   role: "System Communication Dispatcher"
   goal: "Format project health logs and broadcast velocity alert to the team chat application."
   backstory: "A dedicated messaging middleware agent optimized for formatting clean Markdown alerts and delivering them to external communication endpoints without touching internal persistence layers."

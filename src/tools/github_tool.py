@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 from crewai.tools import tool
 
 @tool("Github Commit Fetcher")
-def fetch_recent_commits(repo_owner: str, repo_name: str) -> str:
+def fetch_github_activity(repo_owner: str, repo_name: str) -> str:
     """Fetches the commit history of a specified GitHub repository for the last 72 hours."""
 
     clean_owner = str(repo_owner).strip().replace("'", "").replace('"', '')

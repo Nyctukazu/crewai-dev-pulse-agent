@@ -7,8 +7,8 @@ except (ImportError, AttributeError):
     pass
 
 from dotenv import load_dotenv
-from crew.pipeline import run_velocity_pipeline
-from repository.velocity_dao import check_inactivity_status
+from src.crew.pipeline import run_velocity_pipeline
+from src.repository.velocity_dao import check_inactivity_status
 
 def main():
     print("=" * 70)

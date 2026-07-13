@@ -1,23 +1,41 @@
 from crewai import Task
 import yaml
 
-
 with open('config/tasks.yaml', 'r') as f:
-    github_task_config = yaml.safe_load(f)['velocity_inspection_task']
-    figma_task_config = yaml.safe_load(f)['evaluate_figma_task']
+    task_config = yaml.safe_load(f)
 
-def velocity_inspection_task(agent):
-    """Generates the sequential pipeline tasks bound to our YAML configuration."""
+def get_velocity_task(agents: dict) -> list:
+    """
+    Dynamically maps configuration-driven tasks to specialized agent instances.
+    Accepts a dictionary containing 'miner', 'archiver', 'inspector', and 'communicator' keys.
+    """
 
-    git_task = Task(
-        description=github_task_config['description'],
-        expected_output=github_task_config['expected_output'],
-        agent=agent
+    fetch_logs_task = Task(
+        description=task_config['fetch_external_api_logs_task']['description'],
+        expected_output=task_config['fetch_external_api_logs_task']['expected_output'],
+        agent=agents['miner']
     )
 
-    figma_task = Task(
-        description=figma_task_config['description'],
-        expected_output=figma_task_config['expected_output'],
+    archive_data_task = Task(
+        description=task_config['archive_data_task']['description'],
+        expected_output=task_config['archive_data_task']['expected_output'],
+        agent=agents['archiver'],
+        context=[fetch_logs_task]
     )
 
-    return [git_task, figma_task]
+    audit_velocity_task = Task(
+        description=task_config['audit_velocity_metrics_task']['description'],
+        expected_output=task_config['audit_velocity_metrics_task']['expected_output'],
+        agent=agents['inspector'],
+        context=[archive_data_task]
+    )
+
+    broadcast_alert_task = Task(
+        description=task_config['broadcast_alert_task']['description'],
+        expected_output=task_config['broadcast_alert_task']['expected_output'],
+        agent=agents['communicator'],
+        context=[audit_velocity_task]
+
+    )
+
+    return [fetch_logs_task, archive_data_task, audit_velocity_task, broadcast_alert_task]

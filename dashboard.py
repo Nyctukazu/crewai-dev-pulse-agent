@@ -1,8 +1,8 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-from repository.velocity_dao import fetch_github_logs, fetch_figma_logs
-from crew.pipeline import run_velocity_pipeline
+from src.repository.velocity_dao import fetch_github_logs, fetch_figma_logs
+from src.crew.pipeline import run_velocity_pipeline
 
 st.set_page_config(page_title="E5 Velocity Tracking Dashboard", layout="wide")
 st.title("E5 Velocity Engine Dashboard")

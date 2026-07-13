@@ -1,21 +1,21 @@
 from crewai import Agent
-from src.tools.db_tool import save_commit_tool, save_figma_tool
+from src.tools.discord_tool import send_discord_notification
 import yaml
 
 with open('config/agents.yaml', 'r') as f:
-    config = yaml.safe_load(f)['database_archiver_agent']
+    config = yaml.safe_load(f)['communicator_agent']
 
-def get_data_archiver_agent(target_llm):
+def get_communicator_agent(target_llm):
     return Agent(
         role=config['role'],
         goal=config['goal'],
         backstory=config['backstory'],
         llm=target_llm,
         tools=[
-            save_commit_tool, 
-            save_figma_tool
+            send_discord_notification
         ],
         memory=False,
         cache=False,
         verbose=True
     )
+
