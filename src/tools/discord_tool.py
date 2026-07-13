@@ -18,7 +18,7 @@ def send_discord_notification(message: str) -> str:
     }
 
     try:
-        response = request.post(webhook_url, json=payload, timeout=10)
+        response = requests.post(webhook_url, json=payload, timeout=10)
         if response.status_code == 204:
             return "Successfully transmitted project velocity metrics report to Discord."
         else:
