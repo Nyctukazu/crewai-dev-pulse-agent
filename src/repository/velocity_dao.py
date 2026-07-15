@@ -1,5 +1,7 @@
 import sys
 import os
+from datetime import datetime, timezone
+from psycopg2.extras import RealDictCursor
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from config.database import get_db_connection
@@ -189,3 +191,64 @@ def save_figma_record(designer_name: str, file_key: str, component_name: str, ac
         return False
     finally:
         connection.close()
+
+def get_developers_status():
+    """
+    
+    """
+
+    connection = get_db_connection()
+    if not connection:
+        return []
+    
+    aggregate_query = """
+    SELECT developer_name, MAX(last_activity) as last_active_time
+    FROM (
+        SELECT developer_name, MAX(committed_at) as last_activity
+        FROM velocity_metrics
+        GROUP BY developer_name
+        UNION ALL
+        SELECT designer_name as developer_name, MAX(modified_at) as last_activity
+        FROM figma_metrics
+        GROUP BY designer_name
+    ) AS combined_activity
+    GROUP BY developer_name;
+    """
+
+    results = []
+    try:
+        with connection.cursor(cursor_factory=RealDictCursor) as cursor:
+            cursor.execute(aggregate_query)
+            contributors = cursor.fetchall()
+
+            now = datetime.now(timezone.utc)
+            start_of_today = now.replace(hour=0, minute=0, second=0, microsecond=0)
+
+            for person in contributors:
+                name = person['developer_name']
+                last_active = person['last_active_time']
+                time_diff = now - last_active
+                hours_elapsed = int(time_diff.total_seconds() / 3600)
+                is_breached = hours_elapsed >= 72
+                has_contributed_today = last_active >= start_of_today
+
+                results.append({
+                    "name": name,
+                    "last_contribution": last_active.isoformat(),
+                    "hours_inactive": hours_elapsed,
+                    "status": "INACTIVE" if is_breached else "ACTIVE",
+                    "has_contributed_today": has_contributed_today
+                })
+            
+    except Exception as e:
+        print(f"Error calculating statuses: {e}")
+    finally:
+        connection.close()
+    
+    return results
+
+if __name__ == "__main__":
+    print("Calculating active team statuses...")
+    team_status = get_developers_status()
+    for member in team_status:
+        print(f"{member['name']} | Status: {member['status']} | Inactive Hours: {member['hours_inactive']} | Contributed Today: {member['has_contributed_today']}")

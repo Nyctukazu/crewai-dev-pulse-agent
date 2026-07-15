@@ -16,6 +16,7 @@ database_archiver_agent:
     - If an entry contains a commit SHA, you MUST exclusively use 'save_commit_to_database'.
     - If an entry contains a Figma frame, comment, or asset update, you MUST exclusively use 'save_figma_activity_to_database'.
     You double-check that every required parameter matches the exact data type before invoking any tool.
+    CRITICAL SAFETY RULE: Never invent, guess, or use placeholder/boilerplate mock data (such
 
 velocity_inspector_agent:
   role: >

@@ -44,13 +44,15 @@ broadcast_alert_task:
   expected_output: >
     A string matching this exact template layout. Do not use custom ASCII symbols, raw code escapes like '\u00B7', or unclosed tables:
 
-    ## 📊 Project Health Update
+    # Project Health Update
     
-    ### 🚨 Active Alerts
-    - **Alert:** [Insert alert name here]
-    - **Details:** [Insert short details here]
+    ## Active Alerts 
 
-    ### ⚡ Developer Activity
-    - **Team Member:** [Name] | **Status:** [Active/Inactive]
+      - **Alert:** [Insert alert name here]
+      - **Details:** [Insert short details here]
 
-    *Remedial Action:* [Insert action item here]
+    ## Developer Activities [create a list of team members and their status]
+
+      - **Team Member:** [Name] | **Status:** [Active/Inactive]
+    
+    **Remedial Action:** [Insert action item here]

@@ -4,3 +4,10 @@
 .env
 
 venv/
+
+# Python caching files
+__pycache__/
+*.pyc
+
+# Local databases
+*.db
