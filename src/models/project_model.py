@@ -1,10 +1,10 @@
-import os
-from dotenv import load_dotenv
 from datetime import datetime
 from enum import Enum as PyEnum
 from typing import List, Optional
-from sqlalchemy import create_engine, ForeignKey, String, Boolean, DateTime, Integer, Table, Column
+from sqlalchemy import create_engine, ForeignKey, String, Boolean, DateTime, Integer
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from pydantic import BaseModel, Field
+from typing import List
 
 
 class GroupRoles(str, PyEnum):
@@ -26,7 +26,7 @@ class Base(DeclarativeBase):
 class MemberInfo(Base):
     __tablename__ = "member_info"
 
-    name: Mapped[str] = mapped_column(String, primar_key=True)
+    name: Mapped[str] = mapped_column(String, primary_key=True)
     role_string: Mapped[str] = mapped_column(String, nullable=False, default="DEVELOPER")
     status: Mapped[Status] = mapped_column(String, default=Status.ACTIVE)
     has_contributed_today: Mapped[bool] = mapped_column(Boolean, default=False)
@@ -48,3 +48,12 @@ class ProjectInfo(Base):
     members: Mapped[List[MemberInfo]] = relationship(
         back_populates="project", cascade="all, delete-orphan"
     )
+
+class MemberState(BaseModel):
+    name: str = Field(description="Exact developer name from database")
+    status: str = Field(description="ACTIVE or INACTIVE")
+    hours_inactive: int = Field(description="Exact calculated hours elapsed")
+    has_contributed_today: bool = Field(description="True or False flag")
+
+class ProjectHealthReport(BaseModel):
+    team_members: List[MemberState] = Field(description="List of real database members")

@@ -194,7 +194,7 @@ def save_figma_record(designer_name: str, file_key: str, component_name: str, ac
 
 def get_developers_status():
     """
-    
+    Takes members status from the database
     """
 
     connection = get_db_connection()
@@ -247,8 +247,23 @@ def get_developers_status():
     
     return results
 
-if __name__ == "__main__":
-    print("Calculating active team statuses...")
-    team_status = get_developers_status()
-    for member in team_status:
-        print(f"{member['name']} | Status: {member['status']} | Inactive Hours: {member['hours_inactive']} | Contributed Today: {member['has_contributed_today']}")
+def get_project_team_status() -> str:
+    """
+    Queries the PostgreSQL database and returns the deterministic
+    activity status, inactive hours, and daily contribution markers
+    for all team contributors.
+    """
+
+    statuses = get_developers_status()
+    if not statuses:
+        return "No contributor metrics found in the database."
+    
+    output = []
+    for member in statuses:
+        alert_flag = "BREACH" if member['status'] == "INACTIVE" else "OK"
+        output.append(
+            f"- **{member['name']}**: Status is {member['status']} ({alert_flag})."
+            f"Last active: {member['hours_inactive']} hours ago. "
+            f"Contributed today: {member['has_contributed_today']}"
+        )
+    return "\n".join(output)

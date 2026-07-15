@@ -22,17 +22,11 @@ archive_data_task:
 # 3 | VELOCITY INSPECTOR LAYER
 audit_velocity_metrics_task:
   description: >
-    Analyze the persistence metrics and sync totals finalized by the database archiver agent.
-    Cross-reference the latest database update records against the current system time to measure active contribution gaps.
-    Calculate the precise number of hours elapsed since the last verifiable code commit or design iteration layour adjustment, and explicitly determine if any team member has breached the strict 72-hour operational inactivity threshold limit.
+    "Execute the 'Get Project Team Status' tool. "
+    "Take the exact output string from that tool and map it to the requested structure. "
+    "CRITICAL: Do not invent names or create text not provided by the tool."
   expected_output: >
-    A perfectly clean, human-readable Markdown report optimized for Discord text redering.
-    Follow these exact formatting rules:
-    - Do NOT include literal '\n' string characters, weird ASCII boundary shapes (like '—□▬'), or broken characters.  Use standard Markdown newlines.
-    - Format the 'Recent Developer Velocity' section using a well-closed Markdown table with clear column pipes (|).
-    - Use a clear, bold header structure (## for main titles, ### for sub-sections).
-    - Format alerts and recommendations using clean bullet points and bold highlights so they are immediately scannable.
-
+    "A structured list of current team members directly from database tools."
 
 # 4 | COMMUNICATION LAYER
 broadcast_alert_task:
@@ -53,6 +47,6 @@ broadcast_alert_task:
 
     ## Developer Activities [create a list of team members and their status]
 
-      - **Team Member:** [Name] | **Status:** [Active/Inactive]
+      - **Team Member:** [Name] | **Status:** [Active/Inactive] | **Inactive Hours:** [hours_inactive] | **Contributed Today:** [has_contributed_today]
     
     **Remedial Action:** [Insert action item here]

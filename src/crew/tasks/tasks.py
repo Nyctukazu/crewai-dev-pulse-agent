@@ -1,4 +1,5 @@
 from crewai import Task
+from src.models.project_model import ProjectHealthReport
 import yaml
 
 with open('config/tasks.yaml', 'r') as f:
@@ -26,8 +27,10 @@ def get_velocity_task(agents: dict) -> list:
     audit_velocity_task = Task(
         description=task_config['audit_velocity_metrics_task']['description'],
         expected_output=task_config['audit_velocity_metrics_task']['expected_output'],
+        output_json=ProjectHealthReport,
         agent=agents['inspector'],
         context=[archive_data_task]
+        
     )
 
     broadcast_alert_task = Task(

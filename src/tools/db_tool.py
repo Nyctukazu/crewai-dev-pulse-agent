@@ -1,5 +1,5 @@
 from crewai.tools import tool
-from src.repository.velocity_dao import save_commit_record, commit_exists, figma_event_exists, save_figma_record, get_developers_status
+from src.repository.velocity_dao import save_commit_record, commit_exists, figma_event_exists, save_figma_record, get_project_team_status
 
 @tool("Save Commit to Database")
 def save_commit_tool(developer_name: str, commit_sha: str, commit_message: str, committed_at: str) -> str:
@@ -25,23 +25,6 @@ def save_figma_tool(designer_name: str, file_key: str, component_name: str, acti
     return "Failed to log design event due to a database backend error."
 
 @tool("Get Project Team Status")
-def get_project_team_status() -> str:
-    """
-    Queries the PostgreSQL database and returns the deterministic
-    activity status, inactive hours, and daily contribution markers
-    for all team contributors.
-    """
-
-    statuses = get_developers_status()
-    if not statuses:
-        return "No contributor metrics found in the database."
-    
-    output = []
-    for member in statuses:
-        alert_flag = "BREACH" if member['status'] == "INACTIVE" else "OK"
-        output.append(
-            f"- **{member['name']}**: Status is {member['status']} ({alert_flag})."
-            f"Last active: {member['hours_inactive']} hours ago. "
-            f"Contributed today: {member['has_contributed_today']}"
-        )
-    return "\n".join(output)
+def team_status_tool() -> str:
+    """Queries the PostgreSQL database and returns the deterministic activity status of all team contributions."""
+    return get_project_team_status()
